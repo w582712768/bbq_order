@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美味点餐系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .menu-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .dish-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .dish-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dish-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .dish-info {
+            padding: 20px;
+        }
+        
+        .dish-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .dish-price {
+            font-size: 1.2rem;
+            color: #e74c3c;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .quantity-btn {
+            background: #f1f1f1;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .quantity-display {
+            font-size: 1.2rem;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .submit-section {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 1px solid #eee;
+        }
+        
+        .submit-btn, .share-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            margin: 0 10px;
+        }
+        
+        .share-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        }
+        
+        .submit-btn:hover, .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .share-btn:hover {
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 768px) {
+            .modal-content {
+                width: 600px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .modal-content {
+                width: 95%;
+                height: 95%;
+            }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .order-total {
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            text-align: right;
+            color: #e74c3c;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 10px;
+        }
+        
+        .confirm-btn {
+            background: #3498db;
+            color: white;
+        }
+        
+        .share-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .share-text {
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .share-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .share-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .wechat {
+            background: #2ecc71;
+        }
+        
+        .weibo {
+            background: #e74c3c;
+        }
+        
+        .qq {
+            background: #3498db;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .submit-btn, .share-btn {
+                padding: 12px 30px;
+                font-size: 1rem;
+                margin: 5px;
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .share-image-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .share-image {
+            max-width: 100%;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>美味点餐系统</h1>
+            <p class="menu-description">精选美食，即刻下单</p>
+        </header>
+        
+        <div class="menu-grid" id="menuContainer">
+            <!-- 菜品将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="submit-section">
+            <button class="submit-btn" id="submitOrder">提交订单</button>
+            <button class="share-btn" id="shareOrder">分享订单</button>
+        </div>
+        
+        <footer>
+            <p>© 2023 美味点餐系统 | 静态网页示例</p>
+        </footer>
+    </div>
+
+    <!-- 订单确认模态框 -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">订单确认</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="orderModalBody">
+                <!-- 订单内容将动态生成 -->
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn confirm-btn" id="confirmOrder">确认订单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享模态框 -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">分享订单</h2>
+                <button class="close-btn" id="closeShareModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="shareContent">
+                    <!-- 分享内容将动态生成 -->
+                </div>
+                <div class="share-section">
+                    <p class="share-text">分享到社交平台</p>
+                    <div class="share-buttons">
+                        <div class="share-icon wechat" title="微信">
+                            <i class="fab fa-weixin"></i>
+                        </div>
+                        <div class="share-icon weibo" title="微博">
+                            <i class="fab fa-weibo"></i>
+                        </div>
+                        <div class="share-icon qq" title="QQ">
+                            <i class="fab fa-qq"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" id="copyTextBtn">复制文本</button>
+                <button class="modal-btn confirm-btn" id="saveImageBtn">保存图片</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知 -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // 菜品数据配置
+        const dishes = [
+            {
+                id: 1,
+                name: "经典汉堡",
+                image: "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                price: 28
+            },
+            {
+                id: 2,
+                name: "意式披萨",
+                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                price: 42
+            },
+            {
+                id: 3,
+                name: "日式寿司",
+                image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                price: 38
+            },
+            {
+                id: 4,
+                name: "香煎牛排",
+                image: "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                price: 68
+            },
+            {
+                id: 5,
+                name: "田园沙拉",
+                image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                price: 22
+            },
+            {
+                id: 6,
+                name: "奶油意面",
+                image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                price: 32
+            }
+        ];
+
+        // 存储每个菜品的数量
+        const quantities = {};
+        
+        // 初始化菜品数量
+        dishes.forEach(dish => {
+            quantities[dish.id] = 0;
+        });
+
+        // 生成菜品HTML
+        function renderDishes() {
+            const menuContainer = document.getElementById('menuContainer');
+            menuContainer.innerHTML = '';
+            
+            dishes.forEach(dish => {
+                const dishElement = document.createElement('div');
+                dishElement.className = 'dish-card';
+                dishElement.innerHTML = `
+                    <img src="${dish.image}" alt="${dish.name}" class="dish-image">
+                    <div class="dish-info">
+                        <h3 class="dish-name">${dish.name}</h3>
+                        <div class="dish-price">¥${dish.price}</div>
+                        <div class="quantity-control">
+                            <button class="quantity-btn minus" data-id="${dish.id}">-</button>
+                            <span class="quantity-display" id="quantity-${dish.id}">0</span>
+                            <button class="quantity-btn plus" data-id="${dish.id}">+</button>
+                        </div>
+                    </div>
+                `;
+                menuContainer.appendChild(dishElement);
+            });
+            
+            // 添加事件监听器
+            document.querySelectorAll('.quantity-btn.plus').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const dishId = parseInt(btn.getAttribute('data-id'));
+                    quantities[dishId]++;
+                    document.getElementById(`quantity-${dishId}`).textContent = quantities[dishId];
+                });
+            });
+            
+            document.querySelectorAll('.quantity-btn.minus').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const dishId = parseInt(btn.getAttribute('data-id'));
+                    if (quantities[dishId] > 0) {
+                        quantities[dishId]--;
+                        document.getElementById(`quantity-${dishId}`).textContent = quantities[dishId];
+                    }
+                });
+            });
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // 提交订单
+        document.getElementById('submitOrder').addEventListener('click', () => {
+            const orderModalBody = document.getElementById('orderModalBody');
+            const orderModal = document.getElementById('orderModal');
+            
+            orderModalBody.innerHTML = '';
+            let totalAmount = 0;
+            let hasItems = false;
+            
+            dishes.forEach(dish => {
+                if (quantities[dish.id] > 0) {
+                    hasItems = true;
+                    const itemTotal = dish.price * quantities[dish.id];
+                    totalAmount += itemTotal;
+                    
+                    const orderItem = document.createElement('div');
+                    orderItem.className = 'order-item';
+                    orderItem.innerHTML = `
+                        <span>${dish.name} × ${quantities[dish.id]}</span>
+                        <span>¥${itemTotal}</span>
+                    `;
+                    orderModalBody.appendChild(orderItem);
+                }
+            });
+            
+            if (hasItems) {
+                const orderTotal = document.createElement('div');
+                orderTotal.className = 'order-total';
+                orderTotal.textContent = `总计: ¥${totalAmount}`;
+                orderModalBody.appendChild(orderTotal);
+                
+                orderModal.style.display = 'flex';
+            } else {
+                showNotification('请至少选择一道菜品！');
+            }
+        });
+
+        // 分享订单
+        document.getElementById('shareOrder').addEventListener('click', () => {
+            const shareContent = document.getElementById('shareContent');
+            const shareModal = document.getElementById('shareModal');
+            
+            shareContent.innerHTML = '';
+            let totalAmount = 0;
+            let hasItems = false;
+            
+            // 创建分享内容
+            const shareText = document.createElement('div');
+            shareText.className = 'share-text-content';
+            
+            let textContent = '我的点餐订单:\n\n';
+            
+            dishes.forEach(dish => {
+                if (quantities[dish.id] > 0) {
+                    hasItems = true;
+                    const itemTotal = dish.price * quantities[dish.id];
+                    totalAmount += itemTotal;
+                    
+                    textContent += `${dish.name} × ${quantities[dish.id]} = ¥${itemTotal}\n`;
+                }
+            });
+            
+            if (hasItems) {
+                textContent += `\n总计: ¥${totalAmount}`;
+                shareText.textContent = textContent;
+                shareContent.appendChild(shareText);
+                
+                // 尝试生成图片（这里简化处理，实际项目中可以使用html2canvas等库）
+                const shareImageContainer = document.createElement('div');
+                shareImageContainer.className = 'share-image-container';
+                shareImageContainer.innerHTML = `
+                    <p>订单截图（示例）</p>
+                    <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block; margin-top: 10px;">
+                        <h3 style="color: #ff7e5f; text-align: center; margin-bottom: 15px;">我的点餐订单</h3>
+                        <div style="text-align: left; margin-bottom: 15px;">
+                            ${dishes.filter(dish => quantities[dish.id] > 0).map(dish => {
+                                const itemTotal = dish.price * quantities[dish.id];
+                                return `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span>${dish.name} × ${quantities[dish.id]}</span>
+                                    <span>¥${itemTotal}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        <div style="border-top: 1px solid #eee; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>总计:</span>
+                            <span>¥${totalAmount}</span>
+                        </div>
+                    </div>
+                `;
+                shareContent.appendChild(shareImageContainer);
+                
+                shareModal.style.display = 'flex';
+            } else {
+                showNotification('请至少选择一道菜品！');
+            }
+        });
+
+        // 复制文本
+        document.getElementById('copyTextBtn').addEventListener('click', () => {
+            const shareText = document.querySelector('.share-text-content').textContent;
+            
+            // 使用现代剪贴板API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText)
+                    .then(() => {
+                        showNotification('订单文本已复制到剪贴板！');
+                    })
+                    .catch(err => {
+                        console.error('复制失败: ', err);
+                        showNotification('复制失败，请手动复制文本');
+                    });
+            } else {
+                // 回退方案
+                const textArea = document.createElement('textarea');
+                textArea.value = shareText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showNotification('订单文本已复制到剪贴板！');
+                } catch (err) {
+                    console.error('复制失败: ', err);
+                    showNotification('复制失败，请手动复制文本');
+                }
+                document.body.removeChild(textArea);
+            }
+        });
+
+        // 保存图片（简化处理，实际项目中可以使用html2canvas生成真实图片）
+        document.getElementById('saveImageBtn').addEventListener('click', () => {
+            showNotification('图片保存功能需要额外库支持，当前为演示状态');
+            // 实际实现可以使用html2canvas库:
+            // html2canvas(document.querySelector('.share-image-container')).then(canvas => {
+            //   canvas.toBlob(blob => {
+            //     const url = URL.createObjectURL(blob);
+            //     const a = document.createElement('a');
+            //     a.href = url;
+            //     a.download = '订单截图.png';
+            //     a.click();
+            //   });
+            // });
+        });
+
+        // 关闭模态框
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('orderModal').style.display = 'none';
+        });
+        
+        document.getElementById('closeShareModal').addEventListener('click', () => {
+            document.getElementById('shareModal').style.display = 'none';
+        });
+
+        // 确认订单
+        document.getElementById('confirmOrder').addEventListener('click', () => {
+            document.getElementById('orderModal').style.display = 'none';
+            showNotification('订单提交成功！感谢您的订购。');
+            
+            // 重置数量
+            dishes.forEach(dish => {
+                quantities[dish.id] = 0;
+                document.getElementById(`quantity-${dish.id}`).textContent = '0';
+            });
+        });
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', (e) => {
+            const orderModal = document.getElementById('orderModal');
+            const shareModal = document.getElementById('shareModal');
+            
+            if (e.target === orderModal) {
+                orderModal.style.display = 'none';
+            }
+            
+            if (e.target === shareModal) {
+                shareModal.style.display = 'none';
+            }
+        });
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', renderDishes);
+    </script>
+</body>
+</html>
